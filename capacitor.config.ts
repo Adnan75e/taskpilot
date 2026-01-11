@@ -1,8 +1,8 @@
-import { CapacitorConfig } from "@capacitor/cli";
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.smarttask.app",
-  appName: "Smart Task",
+  appId: "com.taskpilot.app",
+  appName: "TaskPilot",
   webDir: "out",
   bundledWebRuntime: false,
 };
