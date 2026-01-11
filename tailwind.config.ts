@@ -10,11 +10,16 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        display: ['Inter', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
+        "primary": "#8B5CF6",
+        "purple-deep": "#6D28D9",
+        "purple-vibrant": "#8B5CF6",
+        "lavender-light": "#F5F3FF",
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -24,10 +29,6 @@ export default {
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
-        },
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -70,6 +71,7 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        "3xl": "2.5rem",
       },
       keyframes: {
         'accordion-down': {
