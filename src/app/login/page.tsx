@@ -1,7 +1,12 @@
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+'use client';
+
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="relative min-h-screen max-w-md mx-auto flex flex-col px-6">
       <header className="flex items-center bg-transparent py-10 justify-center">
@@ -40,10 +45,21 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black/60 !text-[20px]" />
                 <input
-                  className="glass-input w-full h-[60px] rounded-2xl pl-12 pr-4 text-black font-medium placeholder:text-black/30 border-none"
+                  className="glass-input w-full h-[60px] rounded-2xl pl-12 pr-12 text-black font-medium placeholder:text-black/30 border-none"
                   placeholder="••••••••"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-black/60 hover:text-black/80"
+                >
+                  {showPassword ? (
+                    <EyeOff className="!text-[20px]" />
+                  ) : (
+                    <Eye className="!text-[20px]" />
+                  )}
+                </button>
               </div>
             </div>
             <div className="text-right">
@@ -64,8 +80,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-10 text-center">
             <p className="text-black/50 text-[14px] font-medium">
-              {"Don't have an account?"}
-              {' '}
+              {"Don't have an account?"}{' '}
               <Link
                 href="#"
                 className="text-black font-bold underline decoration-2 underline-offset-4"
