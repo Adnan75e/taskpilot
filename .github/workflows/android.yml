@@ -1,8 +1,8 @@
-name: Android Build (Capacitor - STRICT FIX)
+name: Android Build (Capacitor - FINAL FIX)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -10,60 +10,64 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout
+      # 1. Checkout code
       - uses: actions/checkout@v4
 
-      # 2️⃣ Node 20 (Capacitor requirement)
+      # 2. Node 20 (Capacitor requires this)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3️⃣ Java 17
+      # 3. Java 17 (Android requirement)
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 4️⃣ Android SDK (EXPLICIT)
+      # 4. Setup Android SDK (OFFICIAL)
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 5️⃣ Install Android platforms & build tools
+      # 5. Install REQUIRED Android packages (NO TYPO)
       - name: Install Android SDK packages
         run: |
-          sdkmanager "platform-tools" \
-                     "platforms;android-34" \
-                     "build-tools;34.0.0 warned"
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
           yes | sdkmanager --licenses
 
-      # 6️⃣ Install npm dependencies
-      - run: npm ci
+      # 6. Install npm dependencies
+      - name: Install dependencies
+        run: npm ci
 
-      # 7️⃣ Build web app
-      - run: npm run build
+      # 7. Build web app
+      - name: Build web
+        run: npm run build
 
-      # 8️⃣ Install Capacitor
-      - run: npm install @capacitor/cli @capacitor/core
+      # 8. Install Capacitor
+      - name: Install Capacitor
+        run: npm install @capacitor/cli @capacitor/core
 
-      # 9️⃣ Add Android (REQUIRED every CI run)
-      - run: npx cap add android
+      # 9. Add Android platform (MANDATORY in CI)
+      - name: Add Android
+        run: npx cap add android
 
-      # 🔟 Sync Capacitor
-      - run: npx cap sync android
+      # 10. Sync Capacitor
+      - name: Sync Capacitor
+        run: npx cap sync android
 
-      # 1️⃣1️⃣ Build APK (STRICT MODE)
+      # 11. Build APK
       - name: Build Debug APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug \
-            --no-daemon \
-            --stacktrace \
-            --warning-mode all
+          ./gradlew assembleDebug --no-daemon
 
-      # 1️⃣2️⃣ Upload APK
-      - uses: actions/upload-artifact@v4
+      # 12. Upload APK
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: taskpilot-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
