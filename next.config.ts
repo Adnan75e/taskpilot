@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 🔑 Netlify static export
+  /**
+   * 🔑 Static export (required for Capacitor & Netlify)
+   */
   output: "export",
 
-  // 🔕 Ignore TS & ESLint errors (Firebase Studio default)
+  /**
+   * 🔕 Ignore TS & ESLint errors
+   * (Firebase Studio / rapid iteration friendly)
+   */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -12,7 +17,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // 🖼 Static hosting ke liye REQUIRED
+  /**
+   * 🖼 Images config for static hosting
+   * REQUIRED for Next.js export mode
+   */
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -33,6 +41,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  /**
+   * 🧠 Important for Capacitor + static routing
+   */
+  trailingSlash: true,
 };
 
 export default nextConfig;
