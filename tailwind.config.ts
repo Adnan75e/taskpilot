@@ -20,6 +20,7 @@ export default {
         "purple-deep": "#6D28D9",
         "purple-vibrant": "#8B5CF6",
         "lavender-light": "#F5F3FF",
+        "status-green": "#22C55E",
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
