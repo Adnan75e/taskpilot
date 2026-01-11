@@ -37,7 +37,10 @@ export default function WelcomePage() {
             </div>
             <ChevronRight className="text-black/40 !text-2xl ml-2" />
           </Link>
-          <button className="glass-card group flex items-center p-7 rounded-3xl text-left">
+          <Link
+            href="/signup"
+            className="glass-card group flex items-center p-7 rounded-3xl text-left"
+          >
             <div className="w-[68px] h-[68px] rounded-2xl glass-icon-container flex items-center justify-center mr-5">
               <UserPlus className="!text-[36px] text-black" />
             </div>
@@ -50,7 +53,7 @@ export default function WelcomePage() {
               </p>
             </div>
             <ChevronRight className="text-black/40 !text-2xl ml-2" />
-          </button>
+          </Link>
         </div>
       </main>
       <div className="fixed -bottom-20 -left-20 w-64 h-64 bg-white/30 rounded-full blur-[80px] -z-10"></div>
