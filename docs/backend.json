@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the TaskPilot application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user (e.g., Admin, Staff)."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "role"
+      ]
+    },
+    "Task": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task",
+      "type": "object",
+      "description": "Represents a task within the TaskPilot application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Task entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the task."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the task."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the task (e.g., Open, In Progress, Completed)."
+        },
+        "assigneeId": {
+          "type": "string",
+          "description": "Reference to User who is assigned to the task. (Relationship: User 1:N Task)"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The tasks due date.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "status",
+        "assigneeId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Access is limited to the user themselves. Includes the user's role.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/tasks/{taskId}",
+        "definition": {
+          "entityName": "Task",
+          "schema": {
+            "$ref": "#/backend/entities/Task"
+          },
+          "description": "Stores tasks assigned to a specific user. Ownership is determined by the `userId` in the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user to whom the task is assigned."
+            },
+            {
+              "name": "taskId",
+              "description": "The unique identifier of the task."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability, following the principles outlined in the prompt. It leverages path-based ownership for user-specific data and separates concerns by storing different types of data in distinct collections. The design avoids `get()` calls in security rules by denormalizing necessary authorization data, thus enabling atomic operations and enhancing security.  \n\nSpecifically:\n\n*   **/users/{userId}:** Stores user profiles. Access is restricted to the user themselves. Admins could be given access via a global role.\n*   **/users/{userId}/tasks/{taskId}:** Stores tasks assigned to a specific user. This structure ensures that tasks are directly associated with users, simplifying ownership-based security rules.  Authorization independence is achieved because access control depends only on the `userId` in the path.\n\nThis structure supports secure `list` operations (QAPs) by:\n\n*   Segregating user-specific data into subcollections. This allows listing only the tasks belonging to a specific user without needing complex filtering rules.\n*   Avoiding the need to read data from other documents to enforce authorization. Each path inherently defines the accessible data, preventing unauthorized access during `list` operations.\n"
+  }
+}

@@ -1,0 +1,133 @@
+/**
+ * This ruleset enforces a strict user-ownership model for the TaskPilot application.
+ * All data is segregated into user-specific data trees, ensuring that a user can only
+ * access their own information. This design is highly secure and performs well for
+ * user-scoped queries.
+ *
+ * Core Philosophy:
+ * A user is the sole owner of their profile document and all associated subcollections
+ * (e.g., their tasks). There is no concept of public data or cross-user access in this
+ * model. All operations require a user to be authenticated.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores the user's profile information.
+ * - /users/{userId}/tasks/{taskId}: Stores the tasks belonging to that specific user.
+ * This hierarchical structure makes path-based security simple and effective.
+ *
+ * Key Security Decisions:
+ * - Disallow User Listing: To protect user privacy and prevent data scraping, it is
+ *   impossible to query the top-level `/users` collection.
+ * - Path-Based Ownership: Authorization is determined by matching the authenticated
+ *   user's UID with the `{userId}` present in the document path.
+ * - Denormalization for Authorization: The structure itself acts as a form of
+ *   denormalization. The `assigneeId` on a Task document is validated against the
+ *   `userId` in its path, ensuring relational integrity without costly lookups.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Verifies that a user is signed in. This is the baseline for all access.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Verifies that the currently authenticated user's UID matches the given userId.
+     * This is the primary function for enforcing document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Verifies ownership for an existing document. Used for update and delete
+     * operations to prevent acting on documents that do not exist.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates required relational fields on User document creation.
+     * Enforces that the internal 'id' field matches the document's ID ({userId}).
+     */
+    function hasValidUserDataForCreate(userId) {
+      let data = request.resource.data;
+      return data.id == userId;
+    }
+
+    /**
+     * Enforces immutability for critical relational fields on a User document.
+     * Prevents the 'id' field from being changed after creation.
+     */
+    function isUserDataImmutable() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates required relational fields on Task document creation.
+     * Enforces path consistency: the internal 'id' and 'assigneeId' fields must
+     * match the {taskId} and {userId} from the path.
+     */
+    function hasValidTaskDataForCreate(userId, taskId) {
+      let data = request.resource.data;
+      return data.id == taskId && data.assigneeId == userId;
+    }
+
+    /**
+     * Enforces immutability for critical relational fields on a Task document.
+     * Prevents the 'id' and 'assigneeId' fields from being changed after creation.
+     */
+    function isTaskDataImmutable() {
+      let data = request.resource.data;
+      return data.id == resource.data.id && data.assigneeId == resource.data.assigneeId;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules: /users
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Manages user profile documents. Access is restricted to the owner.
+     * @path /users/{userId}
+     * @allow (get) An authenticated user reads their own profile: `get /users/user_abc` (auth.uid: 'user_abc').
+     * @deny (get) A user tries to read another user's profile: `get /users/user_xyz` (auth.uid: 'user_abc').
+     * @deny (list) A user tries to list all user profiles: `list /users`.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && hasValidUserDataForCreate(userId);
+      allow update: if isExistingOwner(userId) && isUserDataImmutable();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules: /users/{userId}/tasks
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Manages task documents within a user's private subcollection.
+     * @path /users/{userId}/tasks/{taskId}
+     * @allow (create) An authenticated user creates a task for themselves: `create /users/user_abc/tasks/task_123` (auth.uid: 'user_abc').
+     * @allow (list) An authenticated user lists their own tasks: `list /users/user_abc/tasks` (auth.uid: 'user_abc').
+     * @deny (update) A user tries to update a task owned by someone else: `update /users/user_xyz/tasks/task_456` (auth.uid: 'user_abc').
+     * @principle Enforces document ownership and validates relational integrity between the document and its path.
+     */
+    match /users/{userId}/tasks/{taskId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidTaskDataForCreate(userId, taskId);
+      allow update: if isExistingOwner(userId) && isTaskDataImmutable();
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
