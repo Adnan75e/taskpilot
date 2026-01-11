@@ -64,7 +64,8 @@ export default function LoginPage() {
           </form>
           <div className="mt-10 text-center">
             <p className="text-black/50 text-[14px] font-medium">
-              Don't have an account?{'' '}
+              {"Don't have an account?"}
+              {' '}
               <Link
                 href="#"
                 className="text-black font-bold underline decoration-2 underline-offset-4"
