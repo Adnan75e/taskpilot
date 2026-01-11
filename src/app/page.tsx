@@ -1,7 +1,30 @@
+'use client';
+
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { ChevronRight, LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function WelcomePage() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || user) {
+    // Show a loading state or nothing while checking auth/redirecting
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex h-screen max-w-md mx-auto flex-col overflow-x-hidden">
       <header className="flex items-center bg-transparent p-4 pb-2 justify-center pt-12">
