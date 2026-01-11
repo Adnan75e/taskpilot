@@ -1,5 +1,5 @@
 import { ChevronRight, LogIn, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function WelcomePage() {
   return (
@@ -20,7 +20,7 @@ export default function WelcomePage() {
           </p>
         </div>
         <div className="flex flex-col gap-10">
-          <button className="glass-card group flex items-center p-7 rounded-3xl text-left">
+          <Link href="/login" className="glass-card group flex items-center p-7 rounded-3xl text-left">
             <div className="w-[68px] h-[68px] rounded-2xl glass-icon-container flex items-center justify-center mr-5">
               <LogIn className="!text-[36px] text-black" />
             </div>
@@ -33,7 +33,7 @@ export default function WelcomePage() {
               </p>
             </div>
             <ChevronRight className="text-black/40 !text-2xl ml-2" />
-          </button>
+          </Link>
           <button className="glass-card group flex items-center p-7 rounded-3xl text-left">
             <div className="w-[68px] h-[68px] rounded-2xl glass-icon-container flex items-center justify-center mr-5">
               <UserPlus className="!text-[36px] text-black" />
