@@ -1,6 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useAuth, useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const GoogleIcon = () => (
   <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
@@ -24,6 +28,28 @@ const GoogleIcon = () => (
 );
 
 export default function SignUpPage() {
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  const handleGoogleSignIn = async () => {
+    if (!auth) return;
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // The onAuthStateChanged listener in FirebaseProvider will handle the redirect
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      // Optionally: show a toast notification to the user
+    }
+  };
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
   return (
     <div className="relative flex min-h-screen max-w-md mx-auto flex-col overflow-x-hidden px-6">
       <style jsx global>{`
@@ -65,7 +91,11 @@ export default function SignUpPage() {
           </p>
         </div>
         <div className="glass-card rounded-[2.5rem] p-8 flex flex-col gap-6">
-          <button className="google-btn w-full py-5 rounded-2xl flex items-center justify-center gap-3 text-black font-bold text-lg tracking-tight">
+          <button 
+            onClick={handleGoogleSignIn}
+            className="google-btn w-full py-5 rounded-2xl flex items-center justify-center gap-3 text-black font-bold text-lg tracking-tight"
+            disabled={isUserLoading}
+          >
             <GoogleIcon />
             Continue with Google
           </button>

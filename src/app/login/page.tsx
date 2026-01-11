@@ -2,10 +2,32 @@
 
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth, useUser } from '@/firebase';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!auth) return;
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    initiateEmailSignIn(auth, email, password);
+  };
+  
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
 
   return (
     <div className="relative min-h-screen max-w-md mx-auto flex flex-col px-6">
@@ -24,7 +46,7 @@ export default function LoginPage() {
               Welcome back to your workspace
             </p>
           </div>
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
               <label className="text-[14px] font-bold text-black/80 ml-1">
                 Email
@@ -32,6 +54,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black/60 !text-[20px]" />
                 <input
+                  name="email"
                   className="glass-input w-full h-[60px] rounded-2xl pl-12 pr-4 text-black font-medium placeholder:text-black/30 border-none"
                   placeholder="name@company.com"
                   type="email"
@@ -45,6 +68,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black/60 !text-[20px]" />
                 <input
+                  name="password"
                   className="glass-input w-full h-[60px] rounded-2xl pl-12 pr-12 text-black font-medium placeholder:text-black/30 border-none"
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
@@ -73,6 +97,7 @@ export default function LoginPage() {
             <button
               className="glass-btn w-full h-[64px] rounded-2xl text-black font-bold text-[18px] mt-4 flex items-center justify-center gap-2"
               type="submit"
+              disabled={isUserLoading}
             >
               Login
               <ArrowRight className="!text-[20px]" />
