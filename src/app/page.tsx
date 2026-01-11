@@ -20,7 +20,10 @@ export default function WelcomePage() {
           </p>
         </div>
         <div className="flex flex-col gap-10">
-          <Link href="/login" className="glass-card group flex items-center p-7 rounded-3xl text-left">
+          <Link
+            href="/login"
+            className="glass-card group flex items-center p-7 rounded-3xl text-left"
+          >
             <div className="w-[68px] h-[68px] rounded-2xl glass-icon-container flex items-center justify-center mr-5">
               <LogIn className="!text-[36px] text-black" />
             </div>
