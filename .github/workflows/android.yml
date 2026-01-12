@@ -1,4 +1,4 @@
-name: Android Build (Capacitor – FINAL STABLE)
+name: Android Build (Capacitor - FINAL STABLE)
 
 on:
   push:
@@ -10,48 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      # 2. Node.js (Capacitor requirement)
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3. Java 17 (Android requirement)
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 4. Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 5. Install npm deps
       - name: Install dependencies
         run: npm ci
 
-      # 6. Build web (Next / Vite etc)
-      - name: Build web
+      - name: Build web (Next.js)
         run: npm run build
 
-      # ❌ IMPORTANT: NO cap add / NO cap sync
-      # Android already exists in repo
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli @capacitor/core
 
-      # 7. Build Debug APK
+      # ❗ Android already exists — DO NOT add again
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Grant Gradle permission
+        run: chmod +x gradlew
+        working-directory: android
+
       - name: Build Debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+        working-directory: android
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_HOME: /usr/local/lib/android/sdk
+        run: ./gradlew assembleDebug --no-daemon
 
-      # 8. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
