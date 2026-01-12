@@ -1,4 +1,4 @@
-name: Android Build (Capacitor – STABLE)
+name: Android Build (Capacitor – FINAL STABLE)
 
 on:
   push:
@@ -13,44 +13,53 @@ jobs:
       # 1. Checkout
       - uses: actions/checkout@v4
 
-      # 2. Node 20 (required by Capacitor)
+      # 2. Node 20
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3. Java 17 (required by Android / Gradle)
+      # 3. Java 17
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 4. Install dependencies
+      # 4. Android SDK (OFFICIAL)
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 5. Install required SDK packages (CRITICAL FIX)
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platform-tools" \
+                     "platforms;android-34" \
+                     "build-tools;34.0.0"
+
+      # 6. Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 5. Build web (Next.js / static)
+      # 7. Build web
       - name: Build web
         run: npm run build
 
-      # 6. Install Capacitor CLI
+      # 8. Install Capacitor CLI
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      # ❌ IMPORTANT: NO `cap add android` HERE
-
-      # 7. Sync existing Android project
+      # 9. Sync existing Android project
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 8. Build Debug APK
+      # 10. Build Debug APK
       - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
-      # 9. Upload APK
+      # 11. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
