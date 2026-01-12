@@ -1,8 +1,9 @@
-name: Android Build (Capacitor - FINAL STABLE)
+name: Android CI Build (Capacitor)
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -10,50 +11,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Node.js (Capacitor needs Node 20)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Setup Java 17
+      # 3️⃣ Java 17 (Required for modern Android)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # 4️⃣ Android SDK (official action)
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # 5️⃣ Install JS dependencies
       - name: Install dependencies
         run: npm ci
 
-      - name: Build web (Next.js)
+      # 6️⃣ Build web app (Next / Vite / etc)
+      - name: Build web
         run: npm run build
 
-      - name: Install Capacitor CLI
-        run: npm install @capacitor/cli @capacitor/core
+      # 7️⃣ Install Capacitor CLI
+      - name: Install Capacitor
+        run: npm install -g @capacitor/cli
 
-      # ❗ Android already exists — DO NOT add again
-      - name: Sync Capacitor
+      # 8️⃣ Sync Capacitor (Android already exists)
+      - name: Capacitor Sync
         run: npx cap sync android
 
-      - name: Grant Gradle permission
-        run: chmod +x gradlew
+      # 9️⃣ Build Debug APK
+      - name: Build Android Debug APK
         working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Build Debug APK
-        working-directory: android
-        env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          ANDROID_HOME: /usr/local/lib/android/sdk
-        run: ./gradlew assembleDebug --no-daemon
-
+      # 🔟 Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: SmartTask-Debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
