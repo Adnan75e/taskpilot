@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace "com.taskpilot.app"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.taskpilot.app"
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "com.google.android.material:material:1.11.0"
+
+    implementation project(':capacitor-android')
+    implementation project(':capacitor-cordova-android-plugins')
+}
