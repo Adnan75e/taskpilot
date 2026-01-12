@@ -1,8 +1,8 @@
-name: Android Build (Capacitor - FINAL FIX)
+name: Android Build (Capacitor – STABLE)
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -10,64 +10,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
+      # 1. Checkout
       - uses: actions/checkout@v4
 
-      # 2. Node 20 (Capacitor requires this)
+      # 2. Node 20 (required by Capacitor)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3. Java 17 (Android requirement)
+      # 3. Java 17 (required by Android / Gradle)
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 4. Setup Android SDK (OFFICIAL)
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # 5. Install REQUIRED Android packages (NO TYPO)
-      - name: Install Android SDK packages
-        run: |
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-          yes | sdkmanager --licenses
-
-      # 6. Install npm dependencies
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 7. Build web app
+      # 5. Build web (Next.js / static)
       - name: Build web
         run: npm run build
 
-      # 8. Install Capacitor
-      - name: Install Capacitor
-        run: npm install @capacitor/cli @capacitor/core
+      # 6. Install Capacitor CLI
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
 
-      # 9. Add Android platform (MANDATORY in CI)
-      - name: Add Android
-        run: npx cap add android
+      # ❌ IMPORTANT: NO `cap add android` HERE
 
-      # 10. Sync Capacitor
+      # 7. Sync existing Android project
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 11. Build APK
+      # 8. Build Debug APK
       - name: Build Debug APK
-        working-directory: android
         run: |
+          cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug
 
-      # 12. Upload APK
+      # 9. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: taskpilot-debug-apk
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
